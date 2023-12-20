@@ -13,15 +13,22 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0",
-	name: "why are you even here",
+	num: "0.1",
+	name: "Row 2!",
 }
 
-let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.0</h3><br>
-		-Nothing.`
+let changelog = `<h1>Changelog:</h1><br><br>
+	<h3>v0.1</h3><br>
+	<h2>Dec 20, 2023</h2><br>
+		-Fixed Prestige formlulas.<br>
+		-Greatly reduced endgame requirement.<br>
+		-Added Time.<br>
+		-Fixed Speed formulas.<br>
+	<br><br><h3>v0.0</h3><br>
+	<h2>Dec 18, 2023</h2><br>
+		-Released game.`
 
-let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
+let winText = `Good job! That wasn't very hard, but wait for 0.2.... or just get back to work.`
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
@@ -55,12 +62,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [
+var displayThings = ['Current endgame: 1e9 points'
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("e280000000"))
+	return player.points.gte(new Decimal("1000000000"))
 }
 
 
