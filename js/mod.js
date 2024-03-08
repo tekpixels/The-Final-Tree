@@ -13,19 +13,25 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
-	name: "Row 2!",
+	num: "0.1.1",
+	name: "A small update that took way too long",
 }
 
 let changelog = `<h1>Changelog:</h1><br><br>
-	<h3>v0.1</h3><br>
-	<h2>Dec 20, 2023</h2><br>
+	<h3>v0.1.1</h3><br>
+	<h4>Mar 8, 2024</h4><br>
+		-Wasted too much time.<br>
+		-Increased endgame.<br>
+		-Almost added beta Row 3. I didn't.<br>
+		-increased Row 2 and Row 1 content.<br>
+	<br><br><h3>v0.1</h3><br>
+	<h4>Dec 20, 2023</h4><br>
 		-Fixed Prestige formlulas.<br>
 		-Greatly reduced endgame requirement.<br>
 		-Added Time.<br>
 		-Fixed Speed formulas.<br>
 	<br><br><h3>v0.0</h3><br>
-	<h2>Dec 18, 2023</h2><br>
+	<h4>Dec 18, 2023</h4><br>
 		-Released game.`
 
 let winText = `Good job! That wasn't very hard, but wait for 0.2.... or just get back to work.`
@@ -53,7 +59,7 @@ function getPointGen() {
 	if (hasUpgrade('p', 12)) gain = gain.times(upgradeEffect('p', 12))
 	if (hasUpgrade('p', 13)) gain = gain.times(upgradeEffect('p', 13))
 	if (hasUpgrade('s', 11)) gain = gain.times(upgradeEffect('s', 11))
-	gain = gain.times(new Decimal(2).pow(player.s.points))
+	if (hasUpgrade('t', 11)) gain = gain.times(upgradeEffect('t', 11))
 	return gain
 }
 
@@ -62,12 +68,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = ['Current endgame: 1e9 points'
+var displayThings = ['Current endgame: 1e20 points'
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("1000000000"))
+	return player.points.gte(new Decimal("1e20"))
 }
 
 
