@@ -13,12 +13,18 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1.1",
-	name: "A small update that took way too long",
+	num: "0.1.2",
+	name: "NERF NERF NERF NERF NERF NERF NERF",
 }
 
 let changelog = `<h1>Changelog:</h1><br><br>
-	<h3>v0.1.1</h3><br>
+	<h3>v0.1.2</h3><br>
+	<h4>Dec 7, 2024</h4><br>
+		-"wasted too much time" y'all waited 5 hours for the update💀<br>
+		-Nerfed A LOT of formulas, still don't have ideas for the 7th prestige upgrade though.<br>
+		-Added Meta upgrades.<br>
+		-Expect Row 3 (or at least Dilation ;) by Christmas!<br>
+	<br><br><h3>v0.1.1</h3><br>
 	<h4>Mar 8, 2024</h4><br>
 		-Wasted too much time.<br>
 		-Increased endgame.<br>
@@ -73,7 +79,7 @@ var displayThings = ['Current endgame: 1e20 points'
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("1e20"))
+	return player.points.gte(new Decimal("1e50"))
 }
 
 

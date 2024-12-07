@@ -1,5 +1,5 @@
 addLayer("a", {
-    name: "Achievements", // This is optional, only used in a few places, If absent it just uses the layer id.
+    name: "achievements", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "A", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
@@ -12,14 +12,14 @@ addLayer("a", {
     achievements: {
         11: {
             name: "The journey begins",
-            done() {return player.points.greaterThanOrEqualTo(1)},
-            tooltip: "Gain 1 point.",
-            image: './js/images/11.png'
+            done() {return player.p.points.greaterThanOrEqualTo(1)},
+            tooltip: "Gain 1 prestige point.",
+            image: './js/images/tft11.png'
         }, 
         12: {
             name: "Getting Serious",
             done() {return player.p.total.greaterThanOrEqualTo(10)},
-            tooltip: "Make a total of 10 prestige points."
+            tooltip: "Make a total of 10 prestige points.",
         },
         13: {
             name: "Boom shakalaka",
@@ -32,14 +32,52 @@ addLayer("a", {
             tooltip: "Unlock all row 2 layers."
         },
         15: {
-            name: "pro",
-            done() {return player.points.greaterThanOrEqualTo(1000000000)},
-            tooltip: "Have 1e9 points."
+            name: "what just happened",
+            done() {return hasUpgrade("p", 31)},
+            tooltip: "But the 7th prestige upgrade."
         },
         21: {
             name: "Now we're talking!",
             done() {return hasMilestone('s', 0) && hasMilestone('t', 0)},
             tooltip: "Get all Row 2 milestones."
+        }
+    }
+})
+addLayer("m", {
+    name: "meta", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "M", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+    }},
+    color: "#00FF00",
+    tooltip: "Meta",
+    type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    row: "side", // Row the layer is in on the tree (0 is the first row) 
+    tabFormat: {
+        "Upgrade Tree": {
+            content: [
+                ["display-text",
+                     "Upgrades in the upgrade tree are unlocked after reaching certain acheiements. They are usually synergy upgrades between layers."],
+                "blank",
+                "blank",
+                "upgrades"
+            ]
+        }
+    },
+    upgrades: {
+        11: {
+            title: "Manipulate Time",
+            description: "Your playtime boosts point gain.",
+            cost: new Decimal(1e12),
+            currencyDisplayName: "Points",
+            currencyInternalName: "points",
+            unlocked() {return hasAchievement("a", 15)},
+            effect() {
+                return ((player.timePlayed/86400)+1)**1.25
+            },
+            effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" },
+
         }
     }
 })
@@ -63,7 +101,7 @@ addLayer("p", {
         mult = new Decimal(1)
         if (hasUpgrade('p', 21)) mult = mult.times(upgradeEffect('p', 21))
         if (hasUpgrade('p', 22)) mult = mult.times(upgradeEffect('p', 22))
-        mlut = mult.times(player.s.effect)
+        mult = mult.times(tmp.s.effect)
         mult = mult.times(tmp.t.powerEffect)
         return mult
     },
@@ -90,10 +128,10 @@ addLayer("p", {
         12: {
             title: "Boost.",
             description: "Prestige points boost point gain.",
-            cost: new Decimal(1),
+            cost: new Decimal(5),
             effect() {
                 if (hasUpgrade('p', 31)){return player[this.layer].points.pow(1.1)}
-                return player[this.layer].points.add(3).log(2.25)
+                return player[this.layer].points.add(2.5).log(2)
             },
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" },
             unlocked() {return hasUpgrade('p', 11)}
@@ -101,9 +139,9 @@ addLayer("p", {
         13: {
             title: "More Boosting.",
             description: "Points boost themselves.",
-            cost: new Decimal(5),
+            cost: new Decimal(10),
             effect() {
-                return player.points.add(3).log(3)
+                return player.points.add(2).pow(0.3)
             },
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" },
             unlocked() {return hasUpgrade('p', 12)}
@@ -111,7 +149,7 @@ addLayer("p", {
         21: {
             title: "Even More Boosting.",
             description: "Points boost prestige point gain.",
-            cost: new Decimal(10),
+            cost: new Decimal(25),
             effect() {
                 return player.points.add(2.3).log(2.25)
             },
@@ -121,7 +159,7 @@ addLayer("p", {
         22: {
             title: "Even Even More Boosting.",
             description: "Prestige points boost themselves.",
-            cost: new Decimal(25),
+            cost: new Decimal(100),
             effect() {
                 return player[this.layer].points.add(3).pow(0.40)
             },
@@ -135,7 +173,7 @@ addLayer("p", {
             effect() {
                 return player[this.layer].points.add(3).pow(0.10)
             },
-            effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" },
+            effectDisplay() { return "+"+format(upgradeEffect(this.layer, this.id))},
             unlocked() {return hasUpgrade('p', 22)&&player.s.unlocked&&player.t.unlocked}
         },
         31: {
@@ -155,12 +193,12 @@ addLayer("s", {
 		points: new Decimal(0),
     }},
     color: "#FF8888",
-    requires: new Decimal(100), // Can be a function that takes requirement increases into account
+    requires: new Decimal(5000), // Can be a function that takes requirement increases into account
     resource: "speed points", // Name of prestige currency
     baseResource: "prestige points", // Name of resource prestige is based on
     baseAmount() {return player.p.points}, // Get the current amount of baseResource
     type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 2, // Prestige currency exponent
+    exponent: 3, // Prestige currency exponent
     effect(){
         let eff = new Decimal(2)
         if (hasUpgrade('s', 12)) eff = eff.add(upgradeEffect('s', 12))
@@ -187,11 +225,11 @@ addLayer("s", {
 			"prestige-button",
 			"blank",
 			["display-text",
-				function() {return 'You have ' + format(player.s.points) + ' Speed, which boosts Prestige Point generation by '+format(tmp.s.effect)+'x'},
+				function() {return 'You have ' + format(player.s.points) + ' Speed, which boosts Prestige Point generation by '+format(tmp.s.effect)+'x.'},
 					{}],
 			"blank",
 			["display-text",
-				function() {return 'Your best Speed is ' + formatWhole(player.s.best) + '<br>You have made a total of '+formatWhole(player.s.total)+" Speed."},
+				function() {return 'Your best Speed is ' + formatWhole(player.s.best) + '.<br>You have made a total of '+formatWhole(player.s.total)+" Speed."},
 					{}],
 			"blank",
 			"milestones", "blank", "blank", "upgrades"],
@@ -199,9 +237,9 @@ addLayer("s", {
         11: {
             title: "fast",
             description: "Speed boosts point gain.",
-            cost: new Decimal(3),
+            cost: new Decimal(2),
             effect() {
-                    return player[this.layer].points.add(1.5).pow((!hasUpgrade('s', 22)?0.40:1.2))
+                    return player[this.layer].points.add(1.5).pow((!hasUpgrade('s', 22)?0.4:0.5))  //this is my first time using the "if" thingy lol
             },
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" },
         },
@@ -212,6 +250,7 @@ addLayer("s", {
             effect() {
                 return player.t.points.pow(0.1).div(3.16227766017)
             },
+            unlocked() {return player.t.total.gte(1)},
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"+" },
         },
         13: {
@@ -221,6 +260,7 @@ addLayer("s", {
             effect() {
                 return new Decimal.log(player.s.points.add(2), 10)
             },
+            unlocked() {return hasUpgrade("s", 12)},
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"+" },
         },
         21: {
@@ -230,12 +270,14 @@ addLayer("s", {
             effect() {
                 return new Decimal.log(player.s.points.add(2), 20)
             },
+            unlocked() {return hasUpgrade("s", 13)},
             effectDisplay() { return format("-" + upgradeEffect(this.layer, this.id))},
         },
         22: {
             title: "Better Speed",
-            description: "Make the <b>fast</b> upgrade better.",
+            description: "Make the <b>fast</b> upgrade formula better.",
             cost: new Decimal(7),
+            unlocked() {return hasUpgrade("s", 21)},
         }
     },
     milestones: {
@@ -256,12 +298,12 @@ addLayer("t", {
         power: new Decimal(0)
     }},
     color: "#8888FF",
-    requires: new Decimal(100), // Can be a function that takes requirement increases into account
+    requires: new Decimal(5000), // Can be a function that takes requirement increases into account
     resource: "ticks", // Name of prestige currency
     baseResource: "prestige points", // Name of resource prestige is based on
     baseAmount() {return player.p.points}, // Get the current amount of baseResource
     type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 2, // Prestige currency exponent
+    exponent: 3, // Prestige currency exponent
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
         return mult
@@ -271,37 +313,39 @@ addLayer("t", {
     },
     row: 1, // Row the layer is in on the tree (0 is the first row)
     branches: ['p'],
-    layerShown(){return ((hasUpgrade('p', 22)) || (player[this.layer].total.greaterThanOrEqualTo(new Decimal(1))))},
+    layerShown(){return ((hasUpgrade('p', 22)) || (player[this.layer].total.gte(new Decimal(1))))},
     hotkeys: [
         {key: "t", description: "T: Reset for ticks", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ], 
     effect() {
-        let eff = new Decimal(2)
+        let eff = new Decimal(0.2)
         if (hasUpgrade('t', 12)) eff = eff.add(upgradeEffect('t', 12))
         if (hasUpgrade('p', 23)) eff = eff.add(upgradeEffect('p', 23))
         if (hasUpgrade('t', 21)) eff = eff.times(5)
+
+        eff = eff.times(player[this.layer].points)
         return eff
     },  
     powerEffect() {
-        return player.t.power.add(1).pow(0.5)
+        return player[this.layer].power.add(1).pow(0.5)
     },
     update(diff) {
-        player.t.power = player.t.power.plus(tmp.t.effect.times(diff))
+        if(player[this.layer].total.gte(new Decimal(1))) {player[this.layer].power = player[this.layer].power.plus(tmp[this.layer].effect.times(diff))}
     },
     doReset(resettingLayer) {
-        player.t.power = new Decimal(0)
+        player[this.layer].power = new Decimal(0)
     },
     tabFormat: ["main-display",
     "prestige-button",
     "blank",
-    ["display-text", function() {return 'Your ticks are producing ' + format(tmp.t.effect) + ' time per second.'}],
+    ["display-text", function() {return 'Your ticks are producing ' + format(tmp[this.layer].effect) + ' time per second.'}],
     "blank",
     ["display-text",
-        function() {return 'You have ' + format(player.t.power) + ' Time, which boosts Prestige Point generation by '+format(tmp.t.powerEffect)+'x'},
+        function() {return 'You have ' + format(player[this.layer].power) + ' Time, which boosts Prestige Point generation by '+format(tmp[this.layer].powerEffect)+'x.'},
             {}],
     "blank",
     ["display-text",
-        function() {return 'Your best Ticks is ' + formatWhole(player.t.best) + '<br>You have made a total of '+formatWhole(player.t.total)+" Ticks."},
+        function() {return 'Your best ticks is ' + formatWhole(player[this.layer].best) + '.<br>You have made a total of '+formatWhole(player[this.layer].total)+" Ticks."},
             {}],
     "blank",
     "milestones", "blank", "blank", "upgrades"],
@@ -309,10 +353,10 @@ addLayer("t", {
         11: {
             title: "Tick",
             description: "Ticks boost point gain.",
-            cost: new Decimal(3),
+            cost: new Decimal(2),
             effect() {
                 if (hasUpgrade('t', 22)){
-                    return player[this.layer].points.add(1.5).pow(1.2)
+                    return player[this.layer].points.add(1.5).pow(0.5)
                 }
                 return player[this.layer].points.add(1.5).pow(0.40)
             },
@@ -323,6 +367,7 @@ addLayer("t", {
             title: "Tock",
             description: "Speed adds to the time base effect.",
             cost: new Decimal(3),
+            unlocked() {return player.s.total.gte(1)},
             effect() {
                 return player.s.points.pow(0.1).div(3.16227766017)
             },
@@ -333,8 +378,9 @@ addLayer("t", {
             title: "There are no differences in the row 2 upgrades",
             description: "take a guess",
             cost: new Decimal(5),
+            unlocked() {return hasUpgrade("t", 12)},
             effect() {
-                return new Decimal.log(player.t.points.add(2), 10)
+                return new Decimal.log(player[this.layer].points.add(2), 10)
             },
             effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"+" },
 
@@ -342,11 +388,13 @@ addLayer("t", {
         21: {
             title: "lazy power",
             description: "5x boost to time gain.",
+            unlocked() {return hasUpgrade("t", 13)},
             cost: new Decimal(7),
         },
         22: {
             title: "Better clocks",
-            description: "Make the <b>Tick</b> upgrade better.",
+            description: "Make the <b>Tick</b> upgrade formula better.",
+            unlocked() {return hasUpgrade("t", 21)},
             cost: new Decimal(7),
         }
     },
@@ -354,7 +402,7 @@ addLayer("t", {
         0: {
             requirementDescription: "5 ticks",
             effectDescription: "Keep prestige points on tick reset.",
-            done() { return player.t.points.gte(5) }
+            done() { return player[this.layer].points.gte(5) }
         }
     }
 })
